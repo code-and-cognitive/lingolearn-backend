@@ -69,7 +69,8 @@ cp .env.example .env
 ```
 
 Ensure your `.env` contains:
-*   `OIDC_GOOGLE_CLIENT_ID`: The Google Client ID acquired from Google Cloud Console.
+*   `GOOGLE_CLIENT_ID`: The Google Client ID acquired from Google Cloud Console.
+*   `GOOGLE_CLIENT_SECRET`: The Google Client Secret acquired from Google Cloud Console.
 *   `JWT_SECRET_KEY`: A strong, random string to encode user sessions securely.
 *   `API_TOKEN`: A fallback system API token.
 *   `LLM_MODEL_ID`: The model served by LMStudio.
