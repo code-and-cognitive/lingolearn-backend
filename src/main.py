@@ -12,8 +12,8 @@ from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
 import json
 
-from config import settings
-from models import (
+from src.core.config import settings
+from src.schema.models import (
     GenerateLessonRequest, GenerateLessonResponse, LessonQuestion,
     VisionAnalysisRequest, VisionAnalysisResponse,
     ConversationRequest, ConversationResponse,
@@ -21,10 +21,10 @@ from models import (
     UserCreate, UserResponse, UserUpdate,
     ChatMessage
 )
-from agent import get_agent
+from src.agent.agent import get_agent
 
 from sqlalchemy.orm import Session
-from database import get_db, DBUser
+from src.db.database import get_db, DBUser
 
 
 # ==================== Initialization ====================

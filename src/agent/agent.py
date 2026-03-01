@@ -3,8 +3,8 @@ import json
 import httpx
 from typing import TypedDict, Optional
 from langgraph.graph import StateGraph, END
-from config import settings
-from models import LessonQuestion
+from src.core.config import settings
+from src.schema.models import LessonQuestion
 
 
 class LMStudioClient:

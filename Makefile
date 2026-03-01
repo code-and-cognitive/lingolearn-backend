@@ -19,11 +19,11 @@ install:
 
 dev:
 	@echo "🚀 Starting development server..."
-	uv run uvicorn main:app --host 127.0.0.1 --port 1234 --reload
+	uv run uvicorn src.main:app --host 127.0.0.1 --port 1234 --reload
 
 run:
 	@echo "🚀 Starting production server..."
-	uv run uvicorn main:app --host 0.0.0.0 --port 1234
+	uv run uvicorn src.main:app --host 0.0.0.0 --port 1234
 
 test:
 	@echo "🧪 Running tests..."

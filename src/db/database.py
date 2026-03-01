@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, Column, String, Integer, DateTime, JSON
 from sqlalchemy.orm import sessionmaker, declarative_base
-from config import settings
+from src.core.config import settings
 from datetime import datetime
 
 engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
