@@ -346,13 +346,14 @@ Format your response as:
         # Response is already formatted in the specific nodes
         return state
     
-    def generate_lesson(self, level: str, native_lang: str, target_lang: str) -> dict:
+    def generate_lesson(self, level: str, native_lang: str, target_lang: str, num_questions: int = 20) -> dict:
         """Generate a lesson with questions"""
         state = {
             "user_message": "",
             "native_lang": native_lang,
             "target_lang": target_lang,
             "level": level,
+            "num_questions": num_questions,
             "context": None,
             "response": "",
             "questions": None,
