@@ -1,263 +1,173 @@
 # LingoLearn API Backend
 
-AI-powered language learning platform backend built with FastAPI and LangGraph.
+LingoLearn is an AI-powered language learning platform using an orchestration layer built with **FastAPI**, **LangGraph**, and managed locally via **LMStudio**.
 
-## 🚀 Features
+## 🚀 Key Features
 
-- **Lesson Generation**: Generate personalized CEFR-level exercises (MCQ + Writing)
-- **Vision Analysis**: Analyze images for vocabulary learning
-- **Conversational AI**: Interactive tutoring with the AI assistant
-- **Text-to-Speech**: voice guidance for pronunciation
-- **LangGraph Agent**: Intelligent workflow orchestration
-- **FastAPI**: Modern, fast, and type-safe API
+*   **Lesson Generation**: Generate personalized CEFR-level exercises (MCQ + Writing).
+*   **Vision Analysis**: Analyze images to extract and learn contextual vocabulary.
+*   **Conversational AI**: Interactive real-time tutoring with a virtual AI assistant.
+*   **Text-to-Speech**: Voice guidance for improving pronunciation.
+*   **LangGraph Orchestration**: Intelligent agentic workflow processing.
+*   **FastAPI Engine**: Modern, exceptionally fast, and type-safe API engine.
+*   **SQLite Database**: Built-in simple persistent storage.
+
+---
+
+## 🏗 Architecture Architecture
+
+The backend follows a modular, scalable architecture organized into logical contexts inside a core `src/` directory. 
+
+```text
+backend/
+├── app.py                  # 🚀 FastApi Application Entrypoint (Uvicorn runner)
+├── pyproject.toml          # 📦 Dependencies and metadata (uv format)
+├── Makefile                # 🛠️ Handy developer commands
+├── src/
+│   ├── api.py              # 🌐 FastAPI App Initialization, Middleware & Routes
+│   ├── agent/
+│   │   └── agent.py        # 🧠 LangGraph workflows & LLM interactions
+│   ├── core/
+│   │   └── config.py       # ⚙️ Environment settings & configuration loading
+│   ├── db/
+│   │   └── database.py     # 💾 SQLite Database Engine and Auth Tables
+│   └── schema/
+│   │   └── models.py       # 📐 Pydantic schema validation models
+└── tests/                  # 🧪 Integration Testing Suite
+```
+
+---
 
 ## 📋 Prerequisites
 
-- Python 3.10+
-- `uv` package manager
-- Google Generative AI API key (from https://ai.google.dev/)
-- Environment variables configured
+To develop or run this application locally, you **must** have the following installed and configured:
+
+1.  **[Python > 3.12](https://www.python.org/downloads/)**
+2.  **[uv](https://docs.astral.sh/uv/)** - An extremely fast Python package and project manager.
+3.  **[LMStudio](https://lmstudio.ai)** - Essential for running local LLM instances (like Llama, Mistral, or Nemotron-3-Nano) enabling our conversational agents and generation tasks natively.
+4.  **[Google Auth Credentials](https://console.cloud.google.com/apis/credentials)** - Necessary for Google Sign-In and generating Authentication Tokens.
+
+---
 
 ## 🔧 Setup Instructions
 
 ### 1. Install Dependencies with `uv`
+
+Navigate to the `backend` directory and install all the locked packages natively using `uv`:
 
 ```bash
 cd backend
 uv sync
 ```
 
-This will install all dependencies specified in `pyproject.toml`.
-
 ### 2. Configure Environment Variables
 
-Copy the example environment file and update with your values:
+Copy the provided template configuration file and update it with your actual credentials:
 
 ```bash
 cp .env.example .env
 ```
 
-Edit `.env` and add:
-- `GOOGLE_API_KEY`: Your Google Generative AI API key
-- `API_TOKEN`: A secure token for API authentication (e.g., a strong random string)
+Ensure your `.env` contains:
+*   `OIDC_GOOGLE_CLIENT_ID`: The Google Client ID acquired from Google Cloud Console.
+*   `JWT_SECRET_KEY`: A strong, random string to encode user sessions securely.
+*   `API_TOKEN`: A fallback system API token.
+*   `LLM_MODEL_ID`: The model served by LMStudio.
 
-```env
-GOOGLE_API_KEY=your-key-here
-API_TOKEN=your-secure-token-here
-API_HOST=127.0.0.1
-API_PORT=1234
-```
+### 3. Start LMStudio (Local Server Layer)
 
-### 3. Run the Development Server
+Ensure that **LMStudio** is open, you have downloaded an acceptable model, and you've started the **Local Inference Server** (typically hosted on `http://127.0.0.1:1234`). 
 
-```bash
-uv run uvicorn main:app --host 127.0.0.1 --port 1234 --reload
-```
+The `src/agent/agent.py` orchestrator connects natively to this inference endpoint to execute text generations and vision analyses.
 
-Or directly with Python:
+### 4. Run the Development Server
+
+You can use the built-in `Makefile` to quickly spin up the development environment:
 
 ```bash
-uv run python -m uvicorn main:app --host 127.0.0.1 --port 1234 --reload
+make dev
 ```
+*(This translates to `uv run uvicorn app:app --host 127.0.0.1 --port 5000 --reload` behind the scenes)*.
 
-The API will be available at `http://127.0.0.1:1234`
+The API will now be successfully exposed at `http://127.0.0.1:5000`.
 
-### 4. Access API Documentation
+### 5. Access Interactive Documentation
 
-- **Swagger UI**: http://127.0.0.1:1234/docs
-- **ReDoc**: http://127.0.0.1:1234/redoc
+*   **Swagger UI**: [http://127.0.0.1:5000/docs](http://127.0.0.1:5000/docs)
+*   **ReDoc**: [http://127.0.0.1:5000/redoc](http://127.0.0.1:5000/redoc)
 
-## 📚 API Endpoints
+---
+
+## 📚 Core API Endpoints
 
 ### Health & Status
-
-```
+```http
 GET  /health              # Quick health check
-GET  /status              # Full status with authentication
+GET  /status              # Full system status (requires Auth token)
 ```
 
-### Lessons
-
-```
-POST /api/v1/lessons/generate
-  Body: {
-    "level": "A1.1",
-    "native_lang": "English",
-    "target_lang": "French",
-    "num_questions": 20
-  }
-```
-
-### Vision Analysis
-
-```
-POST /api/v1/vision/analyze
-  Body: {
-    "image_base64": "base64-encoded-image",
-    "prompt": "Context or question about the image",
-    "native_lang": "English",
-    "target_lang": "French"
-  }
-```
-
-### Conversation
-
-```
-POST /api/v1/conversation/respond
-  Body: {
-    "message": "Bonjour! Comment ça va?",
-    "native_lang": "English",
-    "target_lang": "French",
-    "context": "Casual conversation"
-  }
-```
-
-### Text-to-Speech
-
-```
-POST /api/v1/tts/generate
-  Body: {
-    "text": "Bonjour, comment ça va?",
-    "language": "French",
-    "voice_name": "default"
-  }
+### Core Operations
+```http
+POST /api/v1/lessons/generate      # Generate a targeted lesson block
+POST /api/v1/vision/analyze        # Decode visual inputs and images into learning steps
+POST /api/v1/conversation/respond  # Real-time intelligent bot chat response 
+POST /api/v1/tts/generate          # Text to Speech synthesis 
 ```
 
 ### User Management
-
+```http
+# Authentication goes through the frontend sending OIDC ID tokens
+GET  /api/google                   # Exchanges Google Auth Credential for system JWT
+POST /api/v1/users                 # Database User Registration
+GET  /api/v1/users/{user_id}       # Retrieve Profile details via ID
+PUT  /api/v1/users/{user_id}       # Update Application profiles
 ```
-POST   /api/v1/users                    # Create user
-GET    /api/v1/users/{user_id}         # Get user profile
-PUT    /api/v1/users/{user_id}         # Update user profile
-```
 
-## 🔐 Authentication
+---
 
-All API endpoints (except `/health` and `/` root) require authentication via Bearer token:
+## 🔐 Authentication Process
+
+All protected endpoints require an authentication layer executed via a standard `Bearer` token wrapper:
 
 ```bash
-curl -H "Authorization: Bearer your-api-token" \
-  http://127.0.0.1:1234/api/v1/lessons/generate
+curl -H "Authorization: Bearer your-system-json-web-token" \
+  http://127.0.0.1:5000/api/v1/lessons/generate
 ```
 
-The token should match the `API_TOKEN` in your `.env` file.
+The system accepts either standard user specific `jwt` tokens retrieved from `GET /api/google`, or the raw static `API_TOKEN`.
 
-## 📁 Project Structure
+---
 
-```
-backend/
-├── pyproject.toml           # Project dependencies (uv format)
-├── config.py                # Configuration management
-├── models.py                # Pydantic models for API requests/responses
-├── agent.py                 # LangGraph-based AI agent
-├── main.py                  # FastAPI application
-├── .env.example             # Environment variables template
-└── README.md                # This file
-```
+## � Testing
 
-## 🤖 Agent Architecture
+We handle quality assurance through the native PyTest integration.
 
-The AI agent is built using LangGraph with the following workflow:
-
-1. **Route Task**: Determine the task type (lesson, vision, conversation)
-2. **Task-specific Nodes**:
-   - Lesson Generation: Create diverse exercises
-   - Vision Analysis: Extract vocabulary from images
-   - Conversation: Generate tutoring responses
-3. **Format Response**: Standardize output format
-
-The agent uses Google's Generative AI (Gemini) for:
-- Text generation (lesson creation, conversation)
-- Vision analysis (image understanding)
-- Text-to-speech (speech generation)
-
-## 🔌 Integration with Frontend
-
-The frontend (in `frontend/mobile-app/src/App.jsx`) connects to this backend using:
-
-```javascript
-const API_URL = "http://127.0.0.1:1234";
-const API_TOKEN = "your-api-token";
-
-// Example: Generate lesson
-const response = await fetch(`${API_URL}/api/v1/lessons/generate`, {
-  method: "POST",
-  headers: {
-    "Authorization": `Bearer ${API_TOKEN}`,
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    level: "A1.1",
-    native_lang: "English",
-    target_lang: "French"
-  })
-});
-```
-
-## 🧪 Testing
-
-Run tests with:
-
+**Run fast validations:**
 ```bash
-uv run pytest
+make test
 ```
 
-With coverage:
-
+**Run exhaustive validations with an HTML coverage report:**
 ```bash
-uv run pytest --cov=. --cov-report=html
+make test-cov
 ```
 
-## 📊 CEFR Levels Supported
+---
 
-- A0: Pre-Beginner
-- A1.1: Breakthrough I
-- A1.2: Breakthrough II
-- A2.1: Waystage I
-- A2.2: Waystage II
-- B1.1: Threshold I
-- B1.2: Threshold II
-- B2.1: Vantage I
-- B2.2: Vantage II
-- C1: Advanced
-- C2: Mastery
+## � Troubleshooting
 
-## 🌍 Supported Languages
+### LMStudio Connection Failures
+*   Ensure the local server is running inside the LMStudio software UI.
+*   Check that the server is binding to the default port used by the config `1234`.
 
-English, Bengali, Polish, Spanish, French, German, Japanese, Korean, Italian
+### SQLite Integrity Errors
+*   Delete the local `lingolearn.db` and restart the application - the tables will automatically recreate to handle standard test cases!
 
-## 🚨 Troubleshooting
+### Authentication Fails / Unverifiable Google Tokens
+*   Make sure the `OIDC_GOOGLE_CLIENT_ID` perfectly perfectly matches the iOS Client/Web Client definitions from your Google Developer console. 
 
-### API Key Issues
-- Ensure `GOOGLE_API_KEY` is set correctly
-- Get API key from: https://ai.google.dev/
-
-### Port Already in Use
-```bash
-# Use a different port
-uv run uvicorn main:app --port 3000
-```
-
-### Authentication Fails
-- Check that `API_TOKEN` in `.env` matches the token you're sending
-- Ensure header format is: `Authorization: Bearer <token>`
-
-### LangGraph Issues
-- Ensure LangGraph is properly installed: `uv sync`
-- Check that all dependencies are compatible with Python 3.10+
+---
 
 ## 📝 License
 
-MIT License - See LICENSE file for details
-
-## 🤝 Contributing
-
-Pull requests welcome! Please:
-1. Create a feature branch
-2. Add tests for new functionality
-3. Update documentation
-4. Submit PR for review
-
-## 📧 Support
-
-For issues, questions, or suggestions, please open an issue or contact the team.
+MIT License - See LICENSE file for details.
