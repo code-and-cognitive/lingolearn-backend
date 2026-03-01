@@ -1,7 +1,7 @@
 """Integration tests for LingoLearn API"""
 import pytest
 from fastapi.testclient import TestClient
-from src.main import app
+from src.api import app
 
 
 client = TestClient(app)
